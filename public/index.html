@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Our Bucket List 🖤</title>
+  <link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light&family=Dancing+Script&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: url('https://e0.pxfuel.com/wallpapers/788/655/desktop-wallpaper-batman-catwoman-fortnite-hush.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Shadows Into Light', cursive;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      color: #eee;
+    }
+
+    .quote-box {
+      font-family: 'Dancing Script', cursive;
+      font-size: 2em;
+      color: #c0a0ff;
+      margin-bottom: 30px;
+      text-align: center;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    .buttons-container {
+      display: flex;
+      gap: 160px;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .love-button {
+      width: 180px;
+      height: 220px;
+      border: 4px solid white;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2em;
+      cursor: pointer;
+      box-shadow: 0 8px 30px rgba(255, 255, 255, 0.4);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border-radius: 50%;
+      text-align: center;
+      padding: 10px;
+    }
+
+    .love-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 35px rgba(255, 255, 255, 0.6);
+    }
+
+    .love-button img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 50%;
+      margin-bottom: 10px;
+      border: 3px solid #eee;
+      box-shadow: 0 2px 12px rgba(255,255,255,0.9);
+    }
+
+    .love-button span {
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.4em;
+      background: rgba(255,255,255,0.1);
+      padding: 4px 10px;
+      border-radius: 12px;
+      color: #ffccf9;
+    }
+
+    .note-box {
+      font-family: 'Dancing Script', cursive;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #2a2a2a;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .note-box input {
+      border: none;
+      background: transparent;
+      font-size: 1.2em;
+      color: #eee;
+      font-family: 'Shadows Into Light', cursive;
+      outline: none;
+    }
+
+    .floating-hearts {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+
+    .heart {
+      position: absolute;
+      font-size: 2em;
+      animation: floatUp 5s linear infinite;
+      opacity: 0.3;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(100vh) scale(1); opacity: 0; }
+      100% { transform: translateY(-100vh) scale(1.2); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="quote-box" id="quoteBox">"Together is a beautiful place to be."</div>
+
+  <div class="buttons-container">
+    <div class="love-button" onclick="goToBucket('him')">
+      <img src="https://mrwallpaper.com/images/thumbnail/batman-aesthetic-close-up-shot-6w5v82ikhne38yfa.jpg" alt="Him">
+      <span>🖤 Him</span>
+    </div>
+
+    <div class="love-button" onclick="goToBucket('her')">
+      <img src="https://i.pinimg.com/736x/98/1c/08/981c08e61bee20f9b7f47c88b53348ff.jpg" alt="Her">
+      <span>💗 Her</span>
+    </div>
+  </div>
+
+  <div class="note-box">
+    Write a love note: <input type="text" placeholder="You are my forever..." />
+  </div>
+
+  <div class="floating-hearts" id="heartsContainer"></div>
+
+  <script>
+    // Floating hearts
+    const heartContainer = document.getElementById("heartsContainer");
+    function createHeart() {
+      const heart = document.createElement("div");
+      heart.classList.add("heart");
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.fontSize = (Math.random() * 1 + 1) + "em";
+      heart.textContent = "🖤";
+      heartContainer.appendChild(heart);
+      setTimeout(() => heart.remove(), 5000);
+    }
+    setInterval(createHeart, 800);
+
+    // Navigation
+    function goToBucket(who) {
+      localStorage.setItem("whoAmI", who);
+      if (who === "him") {
+        window.location.href = "his.html";
+      } else {
+        window.location.href = "her.html";
+      }
+    }
+  </script>
+</body>
+</html>
