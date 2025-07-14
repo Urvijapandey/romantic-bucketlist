@@ -165,7 +165,6 @@
     const taskList = document.getElementById("taskList");
     const progressBar = document.getElementById("progress");
     const receivedMessage = document.getElementById("receivedMessage");
-
     let tasks = [];
 
     function updateProgress() {
@@ -174,30 +173,11 @@
       progressBar.style.width = percent + "%";
     }
 
-    function addTask() {
-      const input = document.getElementById("taskInput");
-      const text = input.value.trim();
-      if (!text) return;
-      const task = { text, completed: false };
-      tasks.push(task);
-      input.value = "";
-      renderTasks();
-    }
-
-    function toggleTask(index) {
-      tasks[index].completed = !tasks[index].completed;
-      renderTasks();
-    }
-
-    function deleteTask(index) {
-      tasks.splice(index, 1);
-      renderTasks();
-    }
-
     function renderTasks() {
       taskList.innerHTML = "";
       tasks.forEach((task, i) => {
         const li = document.createElement("li");
+
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.className = "heart-checkbox";
@@ -220,59 +200,75 @@
       updateProgress();
     }
 
-    function sendMessage() {
+    function addTask() {
+      const input = document.getElementById("taskInput");
+      const text = input.value.trim();
+      if (!text) return;
+      const task = { text, completed: false };
+      tasks.push(task);
+      input.value = "";
+      saveTasks();
+      renderTasks();
+    }
+
+    function toggleTask(index) {
+      tasks[index].completed = !tasks[index].completed;
+      saveTasks();
+      renderTasks();
+    }
+
+    function deleteTask(index) {
+      tasks.splice(index, 1);
+      saveTasks();
+      renderTasks();
+    }
+
+    async function saveTasks() {
+      await fetch('/api/bucket/her', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tasks)
+      });
+    }
+
+    async function loadTasks() {
+      try {
+        const res = await fetch('/api/bucket/her');
+        const data = await res.json();
+        tasks = data;
+        renderTasks();
+      } catch (err) {
+        console.error("Could not load tasks:", err);
+      }
+    }
+
+    async function sendMessage() {
       const msg = document.getElementById("messageInput").value.trim();
       if (!msg) return;
-      localStorage.setItem("herMessageToHim", msg);
+
+      await fetch('/message/him', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg })
+      });
+
       document.getElementById("messageInput").value = "";
     }
 
-    function loadMessage() {
-      const message = localStorage.getItem("himMessageToHer");
-      receivedMessage.textContent = message ? message : "(no message yet)";
+    async function loadMessage() {
+      try {
+        const res = await fetch('/message/her');
+        const data = await res.json();
+        receivedMessage.textContent = data.message || "(no message yet)";
+      } catch (err) {
+        receivedMessage.textContent = "(error loading message)";
+      }
     }
 
-    loadMessage();
+    window.onload = function () {
+      loadTasks();
+      loadMessage();
+    };
   </script>
-  <script>
-  const listContainer = document.getElementById("bucketList");
-  const addButton = document.getElementById("addItem");
-  const input = document.getElementById("newItem");
-
-  async function loadItems() {
-    const res = await fetch('/api/bucket/him');
-    const items = await res.json();
-    items.forEach(addItemToDOM);
-  }
-
-  function addItemToDOM(text) {
-    const li = document.createElement('li');
-    li.textContent = text;
-    listContainer.appendChild(li);
-  }
-
-  async function saveItem(text) {
-    const res = await fetch('/api/bucket/him');
-    const items = await res.json();
-    items.push(text);
-    await fetch('/api/bucket/him', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(items)
-    });
-  }
-
-  addButton.addEventListener('click', async () => {
-    const text = input.value.trim();
-    if (text) {
-      addItemToDOM(text);
-      await saveItem(text);
-      input.value = '';
-    }
-  });
-
-  loadItems();
-</script>
-
 </body>
 </html>
