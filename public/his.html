@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>His Bucket List 🖤</title>
   <link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light&family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
       padding: 0;
-      background: url('https://free-3dtextureshd.com/wp-content/uploads/2024/06/47.jpg.webp');
+      background: url('https://www.pixelstalk.net/wp-content/uploads/image11/4K-Batman-desktop-wallpaper-with-a-close-up-of-Batman-iconic-cowl-and-cape-with-a-dark-and-moody-Gotham-City-behind-him.jpg');
       background-size: 100% 100%;
       font-family: 'Shadows Into Light', cursive;
       color: #eee;
@@ -165,8 +165,22 @@
     const taskList = document.getElementById("taskList");
     const progressBar = document.getElementById("progress");
     const receivedMessage = document.getElementById("receivedMessage");
-
     let tasks = [];
+
+    async function fetchTasks() {
+      const res = await fetch("/get-his-tasks");
+      const data = await res.json();
+      tasks = data.tasks || [];
+      renderTasks();
+    }
+
+    async function saveTasks() {
+      await fetch("/save-his-tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tasks }),
+      });
+    }
 
     function updateProgress() {
       const completed = tasks.filter(task => task.completed).length;
@@ -178,20 +192,22 @@
       const input = document.getElementById("taskInput");
       const text = input.value.trim();
       if (!text) return;
-      const task = { text, completed: false };
-      tasks.push(task);
+      tasks.push({ text, completed: false });
       input.value = "";
       renderTasks();
+      saveTasks();
     }
 
     function toggleTask(index) {
       tasks[index].completed = !tasks[index].completed;
       renderTasks();
+      saveTasks();
     }
 
     function deleteTask(index) {
       tasks.splice(index, 1);
       renderTasks();
+      saveTasks();
     }
 
     function renderTasks() {
@@ -220,19 +236,27 @@
       updateProgress();
     }
 
-    function sendMessage() {
+    async function loadMessage() {
+      const res = await fetch("/get-messages");
+      const data = await res.json();
+      receivedMessage.textContent = data.herMessage || "(no message yet)";
+    }
+
+    async function sendMessage() {
       const msg = document.getElementById("messageInput").value.trim();
       if (!msg) return;
-      localStorage.setItem("himMessageToHer", msg);
+      await fetch("/save-messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ from: "him", message: msg }),
+      });
       document.getElementById("messageInput").value = "";
     }
 
-    function loadMessage() {
-      const message = localStorage.getItem("herMessageToHim");
-      receivedMessage.textContent = message ? message : "(no message yet)";
-    }
-
-    loadMessage();
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchTasks();
+      loadMessage();
+    });
   </script>
 </body>
 </html>
