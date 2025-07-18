@@ -1,3 +1,4 @@
+<!-- save as public/his.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +11,7 @@
       margin: 0;
       padding: 0;
       background: url('https://www.pixelstalk.net/wp-content/uploads/image11/4K-Batman-desktop-wallpaper-with-a-close-up-of-Batman-iconic-cowl-and-cape-with-a-dark-and-moody-Gotham-City-behind-him.jpg');
-      background-size: 100% 100%;
+      background-size: cover;
       font-family: 'Shadows Into Light', cursive;
       color: #eee;
       display: flex;
@@ -22,7 +23,7 @@
 
     h1 {
       font-size: 2.5em;
-      color: rgba(0, 132, 255, 0.836);
+      color: rgb(44, 121, 194);
       margin-bottom: 20px;
       text-align: center;
     }
@@ -45,7 +46,7 @@
     .task-input button {
       padding: 10px 16px;
       font-size: 1.1em;
-      background-color: rgb(0, 157, 255);
+      background-color: rgb(57, 111, 226);
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -93,24 +94,11 @@
       transition: width 0.3s ease-in-out;
     }
 
-    .heart-checkbox {
-      appearance: none;
-      width: 24px;
-      height: 24px;
-      background: url('https://upload.wikimedia.org/wikipedia/commons/3/33/Black_heart.svg') no-repeat center center;
-      background-size: contain;
-      cursor: pointer;
-    }
-
-    .heart-checkbox:checked {
-      filter: drop-shadow(0 0 4px rgb(0, 85, 255));
-    }
-
     .message-section {
       margin-top: 40px;
       width: 100%;
       max-width: 500px;
-      background: #1c1c1c;
+      background: rgba(28, 28, 28, 0.4); /* transparent version */
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 0 10px rgba(0, 51, 255, 0.2);
@@ -142,9 +130,7 @@
 <body>
   <h1>His Bucket List 🖤</h1>
 
-  <div class="progress-bar">
-    <div class="progress" id="progress"></div>
-  </div>
+  <div class="progress-bar"><div class="progress" id="progress"></div></div>
 
   <div class="task-input">
     <input type="text" id="taskInput" placeholder="Add something awesome..." />
@@ -167,21 +153,6 @@
     const receivedMessage = document.getElementById("receivedMessage");
     let tasks = [];
 
-    async function fetchTasks() {
-      const res = await fetch("/get-his-tasks");
-      const data = await res.json();
-      tasks = data.tasks || [];
-      renderTasks();
-    }
-
-    async function saveTasks() {
-      await fetch("/save-his-tasks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tasks }),
-      });
-    }
-
     function updateProgress() {
       const completed = tasks.filter(task => task.completed).length;
       const percent = tasks.length === 0 ? 0 : (completed / tasks.length) * 100;
@@ -194,41 +165,61 @@
       if (!text) return;
       tasks.push({ text, completed: false });
       input.value = "";
-      renderTasks();
-      saveTasks();
+      saveTasks().then(renderTasks);
     }
 
-    function toggleTask(index) {
-      tasks[index].completed = !tasks[index].completed;
-      renderTasks();
-      saveTasks();
+    async function loadTasks() {
+      try {
+        const res = await fetch("/api/bucketlist/him");
+        const data = await res.json();
+        tasks = data;
+        renderTasks();
+      } catch (err) {
+        console.error("Failed to load tasks:", err);
+      }
     }
 
-    function deleteTask(index) {
-      tasks.splice(index, 1);
-      renderTasks();
-      saveTasks();
+    async function saveTasks() {
+      try {
+        await fetch("/api/bucketlist/him", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(tasks)
+        });
+      } catch (err) {
+        console.error("Failed to save tasks:", err);
+      }
     }
 
     function renderTasks() {
       taskList.innerHTML = "";
       tasks.forEach((task, i) => {
         const li = document.createElement("li");
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.className = "heart-checkbox";
-        checkbox.checked = task.completed;
-        checkbox.onchange = () => toggleTask(i);
+
+        const emojiBtn = document.createElement("button");
+        emojiBtn.textContent = task.completed ? "💙" : "🖤";
+        emojiBtn.style.fontSize = "1.5em";
+        emojiBtn.style.background = "transparent";
+        emojiBtn.style.border = "none";
+        emojiBtn.style.cursor = "pointer";
+        emojiBtn.onclick = async () => {
+          tasks[i].completed = !tasks[i].completed;
+          await saveTasks();
+          renderTasks();
+        };
 
         const span = document.createElement("span");
         span.textContent = task.text;
 
         const delBtn = document.createElement("button");
         delBtn.textContent = "❌";
-        delBtn.onclick = () => deleteTask(i);
-        delBtn.style.marginLeft = "10px";
+        delBtn.onclick = async () => {
+          tasks.splice(i, 1);
+          await saveTasks();
+          renderTasks();
+        };
 
-        li.appendChild(checkbox);
+        li.appendChild(emojiBtn);
         li.appendChild(span);
         li.appendChild(delBtn);
         taskList.appendChild(li);
@@ -236,27 +227,33 @@
       updateProgress();
     }
 
-    async function loadMessage() {
-      const res = await fetch("/get-messages");
-      const data = await res.json();
-      receivedMessage.textContent = data.herMessage || "(no message yet)";
-    }
-
     async function sendMessage() {
       const msg = document.getElementById("messageInput").value.trim();
       if (!msg) return;
-      await fetch("/save-messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ from: "him", message: msg }),
-      });
-      document.getElementById("messageInput").value = "";
+      try {
+        await fetch("/api/message/him", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: msg })
+        });
+        document.getElementById("messageInput").value = "";
+      } catch (err) {
+        console.error("Failed to send message:", err);
+      }
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      fetchTasks();
-      loadMessage();
-    });
+    async function loadMessage() {
+      try {
+        const res = await fetch("/api/message/her"); // <- HER message to him
+        const data = await res.json();
+        receivedMessage.textContent = data.message || "(no message yet)";
+      } catch (err) {
+        console.error("Failed to load message:", err);
+      }
+    }
+
+    loadTasks();
+    loadMessage();
   </script>
 </body>
 </html>
