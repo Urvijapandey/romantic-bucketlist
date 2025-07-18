@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Her Bucket List 💗</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Her Bucket List 💖</title>
   <link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light&family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
       padding: 0;
-      background: url('https://www.itl.cat/pngfile/big/313-3131156_comics-catwoman-hd-wallpaper-background-image-artgerm-catwoman.jpg');
-      background-size: 100% 100%;
+      background: url('https://wallpapers.com/images/hd/catwoman-digital-art-775gv7j8wxvgzqpd.jpg');
+      background-size: cover;
       font-family: 'Shadows Into Light', cursive;
-      color: #eee;
+      color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -22,7 +22,7 @@
 
     h1 {
       font-size: 2.5em;
-      color: #ffc8dd;
+      color: pink;
       margin-bottom: 20px;
       text-align: center;
     }
@@ -45,7 +45,7 @@
     .task-input button {
       padding: 10px 16px;
       font-size: 1.1em;
-      background-color: #ffb3c6;
+      background-color: hotpink;
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -64,7 +64,7 @@
       align-items: center;
       justify-content: space-between;
       margin-bottom: 12px;
-      background: #333;
+      background: rgba(255, 182, 193, 0.15);
       padding: 12px;
       border-radius: 10px;
       font-family: 'UnifrakturCook', cursive;
@@ -80,7 +80,7 @@
       width: 100%;
       max-width: 500px;
       height: 14px;
-      background-color: #555;
+      background-color: #eee;
       border-radius: 10px;
       margin-bottom: 20px;
       overflow: hidden;
@@ -89,40 +89,27 @@
     .progress {
       height: 100%;
       width: 0;
-      background-color: yellow;
+      background-color: hotpink;
       transition: width 0.3s ease-in-out;
-    }
-
-    .heart-checkbox {
-      appearance: none;
-      width: 24px;
-      height: 24px;
-      background: url('https://upload.wikimedia.org/wikipedia/commons/3/33/Black_heart.svg') no-repeat center center;
-      background-size: contain;
-      cursor: pointer;
-    }
-
-    .heart-checkbox:checked {
-      filter: drop-shadow(0 0 4px pink);
     }
 
     .message-section {
       margin-top: 40px;
       width: 100%;
       max-width: 500px;
-      background: #2a2a2a;
+      background: rgba(255, 182, 193, 0.2);
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(255, 182, 193, 0.2);
+      box-shadow: 0 0 10px rgba(255, 105, 180, 0.4);
     }
 
     .message-section h3 {
       margin-bottom: 10px;
-      color: #ffc8dd;
+      color: hotpink;
     }
 
     #receivedMessage, #sendMessage {
-      background: #444;
+      background: rgba(255, 255, 255, 0.2);
       color: #fff;
       padding: 12px;
       border-radius: 8px;
@@ -140,11 +127,9 @@
   </style>
 </head>
 <body>
-  <h1>Her Bucket List 💗</h1>
+  <h1>Her Bucket List 💖</h1>
 
-  <div class="progress-bar">
-    <div class="progress" id="progress"></div>
-  </div>
+  <div class="progress-bar"><div class="progress" id="progress"></div></div>
 
   <div class="task-input">
     <input type="text" id="taskInput" placeholder="Add something sweet..." />
@@ -156,7 +141,7 @@
   <div class="message-section">
     <h3>He left a message 💌</h3>
     <div id="receivedMessage">(no message yet)</div>
-    <h3>Leave a message for him 🖤</h3>
+    <h3>Leave a message for him 💙</h3>
     <input type="text" id="messageInput" placeholder="Type your message here...">
     <button onclick="sendMessage()">Send</button>
   </div>
@@ -173,26 +158,58 @@
       progressBar.style.width = percent + "%";
     }
 
+    async function loadTasks() {
+      try {
+        const res = await fetch("/api/bucketlist/her");
+        const data = await res.json();
+        tasks = data;
+        renderTasks();
+      } catch (err) {
+        console.error("Failed to load tasks:", err);
+      }
+    }
+
+    async function saveTasks() {
+      try {
+        await fetch("/api/bucketlist/her", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(tasks)
+        });
+      } catch (err) {
+        console.error("Failed to save tasks:", err);
+      }
+    }
+
     function renderTasks() {
       taskList.innerHTML = "";
       tasks.forEach((task, i) => {
         const li = document.createElement("li");
 
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.className = "heart-checkbox";
-        checkbox.checked = task.completed;
-        checkbox.onchange = () => toggleTask(i);
+        const emojiBtn = document.createElement("button");
+        emojiBtn.textContent = task.completed ? "💖" : "🖤";
+        emojiBtn.style.fontSize = "1.5em";
+        emojiBtn.style.background = "transparent";
+        emojiBtn.style.border = "none";
+        emojiBtn.style.cursor = "pointer";
+        emojiBtn.onclick = async () => {
+          tasks[i].completed = !tasks[i].completed;
+          await saveTasks();
+          renderTasks();
+        };
 
         const span = document.createElement("span");
         span.textContent = task.text;
 
         const delBtn = document.createElement("button");
         delBtn.textContent = "❌";
-        delBtn.onclick = () => deleteTask(i);
-        delBtn.style.marginLeft = "10px";
+        delBtn.onclick = async () => {
+          tasks.splice(i, 1);
+          await saveTasks();
+          renderTasks();
+        };
 
-        li.appendChild(checkbox);
+        li.appendChild(emojiBtn);
         li.appendChild(span);
         li.appendChild(delBtn);
         taskList.appendChild(li);
@@ -200,75 +217,43 @@
       updateProgress();
     }
 
-    function addTask() {
+    async function addTask() {
       const input = document.getElementById("taskInput");
       const text = input.value.trim();
       if (!text) return;
-      const task = { text, completed: false };
-      tasks.push(task);
+      tasks.push({ text, completed: false });
       input.value = "";
-      saveTasks();
+      await saveTasks();
       renderTasks();
-    }
-
-    function toggleTask(index) {
-      tasks[index].completed = !tasks[index].completed;
-      saveTasks();
-      renderTasks();
-    }
-
-    function deleteTask(index) {
-      tasks.splice(index, 1);
-      saveTasks();
-      renderTasks();
-    }
-
-    async function saveTasks() {
-      await fetch('/api/bucket/her', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tasks)
-      });
-    }
-
-    async function loadTasks() {
-      try {
-        const res = await fetch('/api/bucket/her');
-        const data = await res.json();
-        tasks = data;
-        renderTasks();
-      } catch (err) {
-        console.error("Could not load tasks:", err);
-      }
     }
 
     async function sendMessage() {
       const msg = document.getElementById("messageInput").value.trim();
       if (!msg) return;
-
-      await fetch('/message/him', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg })
-      });
-
-      document.getElementById("messageInput").value = "";
+      try {
+        await fetch("/api/message/her", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: msg })
+        });
+        document.getElementById("messageInput").value = "";
+      } catch (err) {
+        console.error("Failed to send message:", err);
+      }
     }
 
     async function loadMessage() {
       try {
-        const res = await fetch('/message/her');
+        const res = await fetch("/api/message/him");
         const data = await res.json();
         receivedMessage.textContent = data.message || "(no message yet)";
       } catch (err) {
-        receivedMessage.textContent = "(error loading message)";
+        console.error("Failed to load message:", err);
       }
     }
 
-    window.onload = function () {
-      loadTasks();
-      loadMessage();
-    };
+    loadTasks();
+    loadMessage();
   </script>
 </body>
 </html>
