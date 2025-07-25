@@ -242,6 +242,36 @@
       }
     }
 
+    const API_BASE = "https://v1.nocodeapi.com/urvija/google_sheets/kCmWygKhhtukMfYi?tabId=his";
+
+async function loadTasks() {
+  try {
+    const res = await fetch(`${API_BASE}?tabId=him`);
+    const data = await res.json();
+    tasks = data.data.map(row => ({
+      text: row.Task,
+      completed: row.Completed === "true"
+    }));
+    renderTasks();
+  } catch (err) {
+    console.error("Failed to load tasks:", err);
+  }
+}
+
+async function saveTasks() {
+  try {
+    const body = tasks.map(t => [t.text, t.completed.toString()]);
+    await fetch(`${API_BASE}?tabId=him`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ values: body })
+    });
+  } catch (err) {
+    console.error("Failed to save tasks:", err);
+  }
+}
+
+
     async function loadMessage() {
       try {
         const res = await fetch("/api/message/her"); // <- HER message to him
