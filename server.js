@@ -48,8 +48,13 @@ app.post('/api/bucketlist/:who', (req, res) => {
 app.get('/api/message/:who', (req, res) => {
   const filePath = getFilePath(req.params.who, 'message');
   fs.readFile(filePath, 'utf-8', (err, data) => {
-    if (err) return res.status(500).json({ error: 'Failed to read message.' });
-    res.json({ message: data || '' });
+    if (err || !data) return res.json({ message: "" });
+    try {
+      const parsed = JSON.parse(data);
+      res.json({ message: parsed.message || "" });
+    } catch (e) {
+      res.json({ message: "" });
+    }
   });
 });
 
@@ -58,7 +63,7 @@ app.post('/api/message/:who', (req, res) => {
   const filePath = getFilePath(req.params.who, 'message');
   const message = req.body.message || '';
   console.log(`Message received from ${req.params.who}: ${message}`);
-  fs.writeFile(filePath, message, err => {
+  fs.writeFile(filePath, JSON.stringify({ message }), err => {
     if (err) return res.status(500).json({ error: 'Failed to save message.' });
     res.json({ message: 'Message saved.' });
   });
