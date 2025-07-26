@@ -239,20 +239,21 @@
     }
   }
 
-  async function sendMessage() {
-    const msg = document.getElementById("messageInput").value.trim();
-    if (!msg) return;
-    try {
-      await fetch(`${API_BASE}/message/her`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg })
-      });
-      document.getElementById("messageInput").value = "";
-    } catch (err) {
-      console.error("Failed to send message:", err);
-    }
+async function sendMessage() {
+  const msg = document.getElementById("messageInput").value.trim();
+  if (!msg) return;
+  try {
+    await fetch(`${API_BASE}/message/him`, {  // ✅ change HER → HIM
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: msg })
+    });
+    document.getElementById("messageInput").value = "";
+  } catch (err) {
+    console.error("Failed to send message:", err);
   }
+}
+
 
   loadTasks();
   loadMessage();
