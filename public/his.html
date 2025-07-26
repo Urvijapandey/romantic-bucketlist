@@ -231,7 +231,7 @@
 
   async function loadMessage() {
     try {
-      const res = await fetch(`${API_BASE}/message/her`); // <- HER message to him
+      const res = await fetch(`${API_BASE}/message/her`);
       const data = await res.json();
       receivedMessage.textContent = data.message || "(no message yet)";
     } catch (err) {
@@ -239,25 +239,31 @@
     }
   }
 
-async function sendMessage() {
-  const msg = document.getElementById("messageInput").value.trim();
-  if (!msg) return;
-  try {
-    await fetch(`${API_BASE}/message/him`, {  // ✅ change HER → HIM
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: msg })
-    });
-    document.getElementById("messageInput").value = "";
-  } catch (err) {
-    console.error("Failed to send message:", err);
+  async function sendMessage() {
+    const msg = document.getElementById("messageInput").value.trim();
+    if (!msg) return;
+    try {
+      await fetch(`${API_BASE}/message/him`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg })
+      });
+      document.getElementById("messageInput").value = "";
+    } catch (err) {
+      console.error("Failed to send message:", err);
+    }
   }
-}
 
+  document.getElementById("messageInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") sendMessage();
+  });
+
+  setInterval(loadMessage, 15000);
 
   loadTasks();
   loadMessage();
 </script>
+
 
 </body>
 </html>
