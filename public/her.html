@@ -146,144 +146,115 @@
     <button onclick="sendMessage()">Send</button>
   </div>
 
-  <script>
-    const taskList = document.getElementById("taskList");
-    const progressBar = document.getElementById("progress");
-    const receivedMessage = document.getElementById("receivedMessage");
-    let tasks = [];
+<script>
+  const taskList = document.getElementById("taskList");
+  const progressBar = document.getElementById("progress");
+  const receivedMessage = document.getElementById("receivedMessage");
+  let tasks = [];
 
-    function updateProgress() {
-      const completed = tasks.filter(task => task.completed).length;
-      const percent = tasks.length === 0 ? 0 : (completed / tasks.length) * 100;
-      progressBar.style.width = percent + "%";
-    }
-
-    async function loadTasks() {
-      try {
-        const res = await fetch("/api/bucketlist/her");
-        const data = await res.json();
-        tasks = data;
-        renderTasks();
-      } catch (err) {
-        console.error("Failed to load tasks:", err);
-      }
-    }
-
-    async function saveTasks() {
-      try {
-        await fetch("/api/bucketlist/her", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(tasks)
-        });
-      } catch (err) {
-        console.error("Failed to save tasks:", err);
-      }
-    }
-
-    function renderTasks() {
-      taskList.innerHTML = "";
-      tasks.forEach((task, i) => {
-        const li = document.createElement("li");
-
-        const emojiBtn = document.createElement("button");
-        emojiBtn.textContent = task.completed ? "💖" : "🖤";
-        emojiBtn.style.fontSize = "1.5em";
-        emojiBtn.style.background = "transparent";
-        emojiBtn.style.border = "none";
-        emojiBtn.style.cursor = "pointer";
-        emojiBtn.onclick = async () => {
-          tasks[i].completed = !tasks[i].completed;
-          await saveTasks();
-          renderTasks();
-        };
-
-        const span = document.createElement("span");
-        span.textContent = task.text;
-
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "❌";
-        delBtn.onclick = async () => {
-          tasks.splice(i, 1);
-          await saveTasks();
-          renderTasks();
-        };
-
-        li.appendChild(emojiBtn);
-        li.appendChild(span);
-        li.appendChild(delBtn);
-        taskList.appendChild(li);
-      });
-      updateProgress();
-    }
-
-    const API_BASE = "https://v1.nocodeapi.com/urvija/google_sheets/kCmWygKhhtukMfYi?tabId=her";
-
-async function loadTasks() {
-  try {
-    const res = await fetch(`${API_BASE}?tabId=her`);
-    const data = await res.json();
-    tasks = data.data.map(row => ({
-      text: row.Task,
-      completed: row.Completed === "true"
-    }));
-    renderTasks();
-  } catch (err) {
-    console.error("Failed to load tasks:", err);
+  function updateProgress() {
+    const completed = tasks.filter(task => task.completed).length;
+    const percent = tasks.length === 0 ? 0 : (completed / tasks.length) * 100;
+    progressBar.style.width = percent + "%";
   }
-}
 
-async function saveTasks() {
-  try {
-    const body = tasks.map(t => [t.text, t.completed.toString()]);
-    await fetch(`${API_BASE}?tabId=her`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ values: body })
-    });
-  } catch (err) {
-    console.error("Failed to save tasks:", err);
-  }
-}
-
-
-    async function addTask() {
-      const input = document.getElementById("taskInput");
-      const text = input.value.trim();
-      if (!text) return;
-      tasks.push({ text, completed: false });
-      input.value = "";
-      await saveTasks();
+  async function loadTasks() {
+    try {
+      const res = await fetch("/api/bucketlist/her");
+      const data = await res.json();
+      tasks = data;
       renderTasks();
+    } catch (err) {
+      console.error("Failed to load tasks:", err);
     }
+  }
 
-    async function sendMessage() {
-      const msg = document.getElementById("messageInput").value.trim();
-      if (!msg) return;
-      try {
-        await fetch("/api/message/her", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: msg })
-        });
-        document.getElementById("messageInput").value = "";
-      } catch (err) {
-        console.error("Failed to send message:", err);
-      }
+  async function saveTasks() {
+    try {
+      await fetch("/api/bucketlist/her", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tasks)
+      });
+    } catch (err) {
+      console.error("Failed to save tasks:", err);
     }
+  }
 
-    async function loadMessage() {
-      try {
-        const res = await fetch("/api/message/him");
-        const data = await res.json();
-        receivedMessage.textContent = data.message || "(no message yet)";
-      } catch (err) {
-        console.error("Failed to load message:", err);
-      }
+  function renderTasks() {
+    taskList.innerHTML = "";
+    tasks.forEach((task, i) => {
+      const li = document.createElement("li");
+
+      const emojiBtn = document.createElement("button");
+      emojiBtn.textContent = task.completed ? "💖" : "🖤";
+      emojiBtn.style.fontSize = "1.5em";
+      emojiBtn.style.background = "transparent";
+      emojiBtn.style.border = "none";
+      emojiBtn.style.cursor = "pointer";
+      emojiBtn.onclick = async () => {
+        tasks[i].completed = !tasks[i].completed;
+        await saveTasks();
+        renderTasks();
+      };
+
+      const span = document.createElement("span");
+      span.textContent = task.text;
+
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "❌";
+      delBtn.onclick = async () => {
+        tasks.splice(i, 1);
+        await saveTasks();
+        renderTasks();
+      };
+
+      li.appendChild(emojiBtn);
+      li.appendChild(span);
+      li.appendChild(delBtn);
+      taskList.appendChild(li);
+    });
+    updateProgress();
+  }
+
+  async function addTask() {
+    const input = document.getElementById("taskInput");
+    const text = input.value.trim();
+    if (!text) return;
+    tasks.push({ text, completed: false });
+    input.value = "";
+    await saveTasks();
+    renderTasks();
+  }
+
+  async function sendMessage() {
+    const msg = document.getElementById("messageInput").value.trim();
+    if (!msg) return;
+    try {
+      await fetch("/api/message/her", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg })
+      });
+      document.getElementById("messageInput").value = "";
+    } catch (err) {
+      console.error("Failed to send message:", err);
     }
+  }
 
-    loadTasks();
-    loadMessage();
-  </script>
+  async function loadMessage() {
+    try {
+      const res = await fetch("/api/message/him");
+      const data = await res.json();
+      receivedMessage.textContent = data.message || "(no message yet)";
+    } catch (err) {
+      console.error("Failed to load message:", err);
+    }
+  }
+
+  loadTasks();
+  loadMessage();
+</script>
+
 </body>
 </html>
